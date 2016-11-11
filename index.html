@@ -5,9 +5,10 @@
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      form { background: #eee ; padding: 1%; position: fixed; bottom: 0; width: 100%; }
+      #chat { background: #eee ; padding: 1%; position: fixed; bottom: 0; width: 100%; }
+      #notifyUser { position: fixed; bottom: 100px; width: 100%; }
 
-      form input {
+   input {
        width: 90%;
     padding: 12px 20px;
     margin: 5px 0;
@@ -18,7 +19,7 @@
     transition: 0.5s;
     outline: none;
   }
-  input[type=text]:focus {
+   input[type=text]:focus {
     border: 3px solid #555;
   }
       form button { 
@@ -31,29 +32,97 @@
   }
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
-      #messages li:nth-child(even) { background: #eee; }
+      #messages li:nth-child(odd){ background: #eee; }
     </style>
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://code.jquery.com/jquery-1.12.0.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   </head>
-   <script src="https://code.jquery.com/jquery-1.12.0.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 
   <body>
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Toodles!<br>Welcome to mychat!</h4>
+      </div>
+      <div class="modal-body">
+                <form class="pure-form">
+                  <input type="text" id="name" placeholder="Enter your username....">
+                  <br><br>
+                  <label>Select an avatar:</label>
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <center>
+                       <img src="boy.jpg" width="100px" height="100px" style="border-radius: 50%"><br>
+                      <input type="radio" name="gender" value="m">Male</center>
+                    </div>
+
+                    <div class="col-sm-6">
+                     <center> <img src="girl.jpg" width="100px" height="100px" style="border-radius: 50%"><br>
+                      <input type="radio" name="gender" value="f">Female</center>
+                    </div>
+                  </div>
+                </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success save" data-dismiss="modal">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     <ul id="messages"></ul>
-    <form action="/">
-      <input id="m" autocomplete="off" placeholder="Type something..." /><button id="Send">Send</button>
+     <span id="notifyUser"></span>
+    <form action="/" id="chat">
+      <input type="hidden" id="user" value="">
+      <input id="m" autocomplete="off" onkeyup="notifyTyping();" placeholder="Type something..." /><button id="Send">Send</button>
     </form>
 
     <script>
+    $(document).ready(function(){
+      $('#myModal').modal({backdrop: 'static', keyboard: false})  
+      $('#myModal').modal('show') ;
+    });
+
   var socket = io();
-    $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
+    $('.save').click(function(){
+      socket.emit('connected',{username: $('#name').val(),gender: $('input[name=gender]:checked').val()});
+    });  
+
+    socket.on('connected',function(data){
+     $('#user').val(data.username);
+     var n=data.username,
+          g=data.gender ;
+      user={ username:n , gender:g};
+      alert("welcome "+user.username);
+    });
+
+    function notifyTyping() { 
+      socket.emit('notifyUser', $('#user').val(););
+    };
+     socket.on('notifyUser', function(user){
+  var me = $('#user').val();
+  if(user != me) {
+    $('#notifyUser').text(user + ' is typing ...');
+  }
+  setTimeout(function(){ $('#notifyUser').text(''); }, 10000);;
+});
+    $('#chat').submit(function(){
+    socket.emit('chat message', {msg:$('#m').val()});
     $('#m').val('');
     return false;
   });
-  socket.on('chat message', function(msg){
-    if(msg!='')
-    // $('#messages').append($('<li>').text(msg));
-    $('#messages').append($('<li>').text(msg));
+
+  socket.on('chat message', function(data){
+    if(data.msg!='')
+  // if(data.id==user.id)
+    $('#messages').append("<li><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'> "+data.msg + "</li>");
+    window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+
   });
   
 </script>
