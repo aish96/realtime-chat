@@ -32,7 +32,51 @@
   }
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd){ background: #eee; }
+      /*#messages li:nth-child(odd){ background: #eee; }*/
+
+      .bubble 
+{
+position: relative;
+left: 120px;
+top:-60px;
+width: 500px;
+height: 105px;
+padding: 10px;
+background: #eee;
+-webkit-border-radius: 15px;
+-moz-border-radius: 15px;
+border-radius: 15px;
+border: #111 solid 4px;
+}
+
+.bubble:after 
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 13px 30px 13px 0;
+border-color: transparent #eee;
+display: block;
+width: 0;
+z-index: 1;
+left: -30px;
+top: 22px;
+}
+
+.bubble:before 
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 16px 33px 16px 0;
+border-color: transparent #111;
+display: block;
+width: 0;
+z-index: 0;
+left: -37px;
+top: 19px;
+}
+
     </style>
    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -41,7 +85,7 @@
   </head>
   <script src="/socket.io/socket.io.js"></script>
 
-  <body>
+  <body background="back.png" style="background-size: cover;">
   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -76,9 +120,10 @@
 
 
     <ul id="messages"></ul>
-     <span id="notifyUser"></span>
+     <h3><span id="notifyUser" class="label label-success"></span></h3>
     <form action="/" id="chat">
       <input type="hidden" id="user" value="">
+      <input type="hidden" id="gen" value="">
       <input id="m" autocomplete="off" onkeyup="notifyTyping();" placeholder="Type something..." /><button id="Send">Send</button>
     </form>
 
@@ -89,38 +134,50 @@
     });
 
   var socket = io();
+  // ------------------- creation of new sockets------------------------------------
     $('.save').click(function(){
       socket.emit('connected',{username: $('#name').val(),gender: $('input[name=gender]:checked').val()});
     });  
 
     socket.on('connected',function(data){
      $('#user').val(data.username);
+     $('#gen').val(data.gender);
      var n=data.username,
           g=data.gender ;
       user={ username:n , gender:g};
       alert("welcome "+user.username);
-    });
+    }); 
 
+// ----------------------notify user when someone types-----------------------------
     function notifyTyping() { 
-      socket.emit('notifyUser', $('#user').val(););
+      socket.emit('notifyUser', $('#user').val()  );
     };
+
+
      socket.on('notifyUser', function(user){
-  var me = $('#user').val();
-  if(user != me) {
+    var me = $('#user').val();
+    if(user != me) {
     $('#notifyUser').text(user + ' is typing ...');
   }
-  setTimeout(function(){ $('#notifyUser').text(''); }, 10000);;
+  setTimeout(function(){ $('#notifyUser').text(''); }, 6500);;
 });
+
+  // -------------------- sending and recieveing of chat message---------------------
     $('#chat').submit(function(){
-    socket.emit('chat message', {msg:$('#m').val()});
+    socket.emit('chat message', {user:$('#user').val(),gender:$('#gen').val(),msg:$('#m').val()});
     $('#m').val('');
     return false;
   });
 
   socket.on('chat message', function(data){
     if(data.msg!='')
-  // if(data.id==user.id)
-    $('#messages').append("<li><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'> "+data.msg + "</li>");
+    if(data.gender=="m"){
+    $('#messages').append("<li ><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'> "+data.msg + "</div></li>");
+  }
+    else{
+       $('#messages').append("<li ><img src='girl.jpg' width=70px height=70px style='border-radius:50%;'> <div class='bubble'>"+data.msg + "</div></li>");
+
+    }
     window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
 
   });
