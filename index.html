@@ -38,7 +38,7 @@
 {
 position: relative;
 left: 120px;
-top:-60px;
+top:-70px;
 width: 500px;
 height: 105px;
 padding: 10px;
@@ -172,10 +172,10 @@ top: 19px;
   socket.on('chat message', function(data){
     if(data.msg!='')
     if(data.gender=="m"){
-    $('#messages').append("<li ><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'> "+data.msg + "</div></li>");
+    $('#messages').append("<li ><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'><br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'> "+data.msg + "</div></li>");
   }
     else{
-       $('#messages').append("<li ><img src='girl.jpg' width=70px height=70px style='border-radius:50%;'> <div class='bubble'>"+data.msg + "</div></li>");
+       $('#messages').append("<li ><img src='girl.jpg' width=70px height=70px style='border-radius:50%;'> <br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'>"+data.msg + "</div></li>");
 
     }
     window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
