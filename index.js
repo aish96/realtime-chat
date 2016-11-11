@@ -21,9 +21,13 @@ socket.on('connected',function(data){
 socket.on('notifyUser', function(user){
     io.emit('notifyUser', user);
   });
+/*socket.on('chat message', function(data){
+	console.log(data.msg1 + " encrypted to " + data.msg2);
+    io.emit('chat message', {msg1:data.msg1});
+  });*/
 socket.on('chat message', function(data){
-	console.log("msg="+data.msg+" gen="+data.gender);
-    io.emit('chat message', {user:data.user,gender:data.gender,msg:data.msg});
+	console.log(data.msg1 + " encrypted to " + data.msg2 + ", gender = "+data.gender);
+    io.emit('chat message', {user:data.user,gender:data.gender,msg1:data.msg1});
   });
 
   socket.on('disconnect', function(){

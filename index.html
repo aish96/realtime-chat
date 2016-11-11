@@ -128,6 +128,86 @@ top: 19px;
     </form>
 
     <script>
+	
+
+	//This is the alphabet array
+	var alphaBetString = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z";
+	var alphaBetTable = alphaBetString.split(" ");
+	
+	//This is the lookup table/array for the ROT13 characters
+	var rot13String = "N O P Q R S T U V W X Y Z A B C D E F G H I J K L M n o p q r s t u v w x y z a b c d e f g h i j k l m";
+	var rot13Table = rot13String.split(" ");
+	
+	//This is for numbers. Numbers will be passed thru ROT5
+	var numberString = "1 2 3 4 5 6 7 8 9 0";
+	var numberTable = numberString.split(" ");
+	
+	//This is the lookup table of ROT5
+	var rot5String = "6 7 8 9 0 1 2 3 4 5";
+	var rot5Table = rot5String.split(" ");
+	
+	//Here's the table for symbols. Symbols will remain the same
+	var symbolString = "~ ` ! @ # $ % ^ & * ( ) _ + - = { } [ ] \\ | ; \' : \" < > ? , . /";
+	var symbolTable = symbolString.split(" ");
+
+	/*Encryption Function*/
+	
+	//Main function
+	var rot13rot5Encode = function(input) {
+    var output = "";
+    for (var i=0; i<input.length; i++) { //This is checking for spaces and if yes, add a space to the output
+        for (var y=0; y<numberTable.length; y++) { //This is the ROT5 cipher for numbers
+            if (input[i]==numberTable[y]) {
+                output+=rot5Table[y];
+            }
+        }
+        for (var x=0; x<alphaBetTable.length; x++) { //This is the ROT13 cipher for letters
+            if (input[i]==alphaBetTable[x]) {
+                output+=rot13Table[x];
+            }
+        }
+        for (var w=0; w<symbolTable.length; w++) {
+            if (input[i]==symbolTable[w]) {
+                output+=symbolTable[w];
+            }
+        }
+        if (input[i]==" ") {
+            output+=" ";
+        }
+    }
+    return output; //Ultimately, return the output
+};
+
+
+	/*Decryption Function*/
+
+	var rot13rot5Decode = function(input) {
+    var output = "";
+    for (var i=0; i<input.length; i++) { //This is checking for spaces and if yes, add a space to the output
+        for (var y=0; y<numberTable.length; y++) { //This is the ROT5 cipher for numbers
+            if (input[i]==rot5Table[y]) {
+                output+=numberTable[y];
+            }
+        }
+        for (var x=0; x<alphaBetTable.length; x++) { //This is the ROT13 cipher for letters
+            if (input[i]==rot13Table[x]) {
+                output+=alphaBetTable[x];
+            }
+        }
+        for (var w=0; w<symbolTable.length; w++) {
+            if (input[i]==symbolTable[w]) {
+                output+=symbolTable[w];
+            }
+        }
+        if (input[i]==" ") {
+            output+=" ";
+        }
+    }
+    return output; //Ultimately, return the output
+};
+
+	
+
     $(document).ready(function(){
       $('#myModal').modal({backdrop: 'static', keyboard: false})  
       $('#myModal').modal('show') ;
@@ -164,18 +244,23 @@ top: 19px;
 
   // -------------------- sending and recieveing of chat message---------------------
     $('#chat').submit(function(){
-    socket.emit('chat message', {user:$('#user').val(),gender:$('#gen').val(),msg:$('#m').val()});
+	var m_enc = rot13rot5Encode($('#m').val());
+	var m_nonenc = rot13rot5Decode(m_enc);
+	console.log(m_enc);
+	console.log(m_nonenc);
+    //socket.emit('chat message', {msg1:m_nonenc, msg2:m_enc});
+    socket.emit('chat message', {user:$('#user').val(),gender:$('#gen').val(),msg1:m_nonenc, msg2:m_enc});
     $('#m').val('');
     return false;
   });
 
   socket.on('chat message', function(data){
-    if(data.msg!='')
+    if(data.msg1!='')
     if(data.gender=="m"){
-    $('#messages').append("<li ><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'><br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'> "+data.msg + "</div></li>");
+    $('#messages').append("<li ><img src='boy.jpg' width=70px height=70px style='border-radius:50%;'><br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'> "+data.msg1 + "</div></li>");
   }
     else{
-       $('#messages').append("<li ><img src='girl.jpg' width=70px height=70px style='border-radius:50%;'> <br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'>"+data.msg + "</div></li>");
+       $('#messages').append("<li ><img src='girl.jpg' width=70px height=70px style='border-radius:50%;'> <br><span class='label label-default'>"+data.user+"</span>"+"<div class='bubble'>"+data.msg1 + "</div></li>");
 
     }
     window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
